@@ -201,7 +201,7 @@ Aquí hay una simple función de ejemplo definida en PSCi que une tres nombres p
 ```text
 > import Prelude
 
-> let fullName first middle last = last <> ", " <> first <> " " <> middle
+> fullName first middle last = last <> ", " <> first <> " " <> middle
 
 > fullName "Phillip" "A" "Freeman"
 Freeman, Phillip A
@@ -227,8 +227,8 @@ En lugar de elevar sobre `Maybe`, podemos elevar sobre `Either String` que permi
 
 ```text
 > :paste
-… let withError Nothing  err = Left err
-…     withError (Just a) _   = Right a
+… withError Nothing  err = Left err
+… withError (Just a) _   = Right a
 … ^D
 ```
 
@@ -238,10 +238,10 @@ Ahora podemos elevar sobre `Either String` proporcionando un mensaje de error ap
 
 ```text
 > :paste
-… let fullNameEither first middle last =
-…     fullName <$> (first  `withError` "First name was missing")
-…              <*> (middle `withError` "Middle name was missing")
-…              <*> (last   `withError` "Last name was missing")
+… fullNameEither first middle last =
+…   fullName <$> (first  `withError` "First name was missing")
+…            <*> (middle `withError` "Middle name was missing")
+…            <*> (last   `withError` "Last name was missing")
 … ^D
 
 > :type fullNameEither
@@ -378,7 +378,7 @@ Person
                 , number: "555-555-5555"
                 }
             , PhoneNumber
-                { type: CellPghone
+                { type: CellPhone
                 , number: "555-555-0000"
                 }
             ]
@@ -558,7 +558,7 @@ En general, `traverse` recorre los elementos de una estructura de datos, realiza
 La firma de tipo para la otra función de `Traversable`, `sequence`, nos puede parecer más familiar:
 
 ```haskell
-sequence :: forall a f. Applicative m => t (f a) -> f (t a)
+sequence :: forall a f. Applicative f => t (f a) -> f (t a)
 ```
 
 De hecho, la función `combineList` que escribimos antes es sólo un caso especial de la función `sequence` de la clase de tipos `Traversable`. Fijando `t` para que sea el constructor de tipo `List`, podemos recuperar el tipo de la función `combineList`:

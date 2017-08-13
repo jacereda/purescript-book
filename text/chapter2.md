@@ -10,7 +10,7 @@ Nuestro primer proyecto será una biblioteca PureScript muy simple, que proporci
 
 Estas son las herramientas que vamos a usar para preparar nuestro entorno de desarrollo para PureScript:
 
-- [`psc`](http://purescript.org) - El propio compilador de PureScript.
+- [`purs`](http://purescript.org) - El propio compilador de PureScript.
 - [`npm`](http://npmjs.org) - El gestor de paquetes de Node, que nos ayudará a instalar el resto de herramientas de desarrollo.
 - [Pulp](https://github.com/bodil/pulp) - Una herramienta de línea de comandos que automatiza muchas de las tareas asociadas a la gestión de proyectos PureScript.
 
@@ -23,12 +23,12 @@ La manera recomendada de instalar el compilador de PureScript es descargar una d
 Debes verificar que los ejecutables del compilador de PureScript están disponibles en tu ruta de ejecutables. Intenta ejecutar el compilador de PureScript en la línea de comandos para comprobarlo:
 
 ```text
-$ psc
+$ purs
 ```
 
 Otras opciones para instalar el compilador de PureScript:
 
-- Usar un gestor de paquetes popular, como NPM o Homebrew (en MacOS).
+- Mediante NPM: `npm install -g PureScript`.
 - Construir el compilador a partir del código fuente. Las instrucciones están disponibles en el sitio web de PureScript.
 
 ## Instalando las herramientas
@@ -213,10 +213,10 @@ $ pulp run
 
 El compilador PureScript viene con un REPL (*Read Eval Print Loop*) interactivo llamado PSCi. Puede ser muy util para probar tu código y experimentar con nuevas ideas. Usemos PSCi para probar la función `diagonal`.
 
-Pulp puede cargar módulos fuente en PSCi automáticamente mediante el comando `pulp psci`.
+Pulp puede cargar módulos fuente en PSCi automáticamente mediante el comando `pulp repl`.
 
 ```text
-$ pulp psci
+$ pulp repl
 >
 ```
 
@@ -267,7 +267,7 @@ Probemos ahora nuestra nueva función `diagonal` en PSCi:
 También puedes usar PSCi para definir funciones:
 
 ```text
-> let double x = x * 2
+> double x = x * 2
 
 > double 10
 20
@@ -289,7 +289,7 @@ Prueba el modo interactivo ahora. Si te atascas en algún punto, usa el comando 
 
 X> ## Ejercicios
 X>
-X> 1. (Fácil) Usa la constante `Math.pi` para escribir una función `circleArea` que calcule el área de un círculo dado su radio. Prueba tu función usando PSCi (_Pista_: no olvides importar `pi` modificando la sentencia `import Math`).
+X> 1. (Fácil) Usa la constante `pi` definida en el módulo `Math` para escribir una función `circleArea` que calcule el área de un círculo dado su radio. Prueba tu función usando PSCi (_Pista_: no olvides importar `pi` modificando la sentencia `import Math`).
 X> 1. (Medio) Usa `bower install` para instalar el paquete `purescript-globals` como una dependencia. Prueba sus funciones en PSCi (_Pista_: puedes usar el comando `:browse` en PSCi para revisar los contenidos de un módulo).
 
 ## Conclusión

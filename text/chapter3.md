@@ -43,7 +43,7 @@ $ pulp build
 PureScript define tres tipos integrados que se corresponden con los tipos primitivos de JavaScript: números, cadenas y booleanos. Están definidos en el módulo `Prim` que se importa de manera implícita por todos los módulos. Se llaman `Number`, `String` y `Boolean` respectivamente y puedes verlos en PSCi usando el comando `:type` para imprimir los tipos de algunos valores simples:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > :type 1.0
 Number
@@ -89,7 +89,7 @@ El error del último ejemplo es un error del comprobador de tipos, que intenta _
 Los registros se corresponden con los objetos de JavaScript y los registros literales tienen la misma sintaxis que los objetos literales de JavaScript:
 
 ```text
-> let author = { name: "Phil", interests: ["Functional Programming", "JavaScript"] }
+> author = { name: "Phil", interests: ["Functional Programming", "JavaScript"] }
 
 > :type author
 { name :: String
@@ -131,9 +131,8 @@ De manera alternativa, las funciones se pueden definir en línea usando una barr
 
 ```text
 > :paste
-… let
-…   add :: Int -> Int -> Int
-…   add = \x y -> x + y
+… add :: Int -> Int -> Int
+… add = \x y -> x + y
 … ^D
 ```
 
@@ -203,8 +202,8 @@ Generalmente, las declaraciones definidas en el mismo bloque deben tener sangrí
 
 ```text
 > :paste
-… let x = 1
-…     y = 2
+… x = 1
+… y = 2
 … ^D
 ```
 
@@ -212,8 +211,8 @@ Pero esto no lo es:
 
 ```text
 > :paste
-… let x = 1
-…      y = 2
+… x = 1
+…  y = 2
 … ^D
 ```
 
@@ -273,27 +272,27 @@ Si tratamos de definir incorrectamente un valor de tipo `List` (usando el operad
 ```text
 > import Data.List
 > Nil :: List
-In a type-annotated expression x :: t, the type t must have kind *
+In a type-annotated expression x :: t, the type t must have kind Type
 ```
 
 Esto es un _error de familia_. Al igual que los valores se distinguen por su _tipo_, los tipos se distinguen por su _familia_, y al igual que los valores erróneamente tipados acaban en _errores de tipo_, los tipos mal expresados resultan en _errores de familia_.
 
-Hay una familia especial llamada `*` que representa la familia de todos los tipos que tienen valores, como `Number` y `String`.
+Hay una familia especial llamada `Type` que representa la familia de todos los tipos que tienen valores, como `Number` y `String`.
 
-Hay también familias para constructores de tipo. Por ejemplo, la familia `* -> *` representa una función de tipos a tipos, como `List`. Así, el error ha ocurrido aquí porque se espera que los valores tengan tipos de familia `*`, pero `List` tiene familia `* -> *`.
+Hay también familias para constructores de tipo. Por ejemplo, la familia `Type -> Type` representa una función de tipos a tipos, como `List`. Así, el error ha ocurrido aquí porque se espera que los valores tengan tipos de familia `Type`, pero `List` tiene familia `Type -> Type`.
 
 Para averiguar la familia de un tipo, usa el comando `:kind` en PSCi. Por ejemplo:
 
 ```text
 > :kind Number
-*
+Type
 
 > import Data.List
 > :kind List
-* -> *
+Type -> Type
 
 > :kind List String
-*
+Type
 ```
 
 El _sistema de familias_ de PureScript soporta otras familias interesantes que veremos más adelante en el libro.
@@ -338,7 +337,7 @@ $ pulp build
 A continuación, carga PSCi y usa el comando `import` para importar tu nuevo módulo:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Data.AddressBook
 ```
@@ -346,7 +345,7 @@ $ pulp psci
 Podemos crear una entrada usando un registro literal, que tiene el mismo aspecto que un objeto anónimo en JavaScript. Vamos a ligarlo a un nombre con una expresión `let`:
 
 ```text
-> let address = { street: "123 Fake St.", city: "Faketown", state: "CA" }
+> address = { street: "123 Fake St.", city: "Faketown", state: "CA" }
 ```
 
 Ahora intenta aplicar nuestra función al ejemplo:
@@ -360,7 +359,7 @@ Ahora intenta aplicar nuestra función al ejemplo:
 Probemos también `showEntry` creando una entrada de la agenda conteniendo nuestra dirección de ejemplo:
 
 ```text
-> let entry = { firstName: "John", lastName: "Smith", address: address }
+> entry = { firstName: "John", lastName: "Smith", address: address }
 > showEntry entry
 
 "Smith, John: 123 Fake St., Faketown, CA"
@@ -388,7 +387,7 @@ No modificamos el `AddressBook` directamente. En su lugar, devolvemos un nuevo `
 Para implementar `insertEntry`, usamos la función `Cons` de `Data.List`. Para ver su tipo, abre PSCi y usa el comando `:type`:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Data.List
 > :type Cons
@@ -490,7 +489,7 @@ Podemos primero filtrar la agenda, manteniendo sólo las entradas con los nombre
 Con esta especificación de alto nivel de nuestra estrategia, podemos calcular el tipo de nuestra función. Primero abre PSCi y busca los tipos de las funciones `filter` y `head`:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Data.List
 > :type filter
@@ -615,7 +614,7 @@ Voy a dejar que tomes tu propia decisión sobre qué definición es más fácil 
 Ahora que tenemos el núcleo de una aplicación, probémosla usando PSCi:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Data.AddressBook
 ```
@@ -656,13 +655,13 @@ Eso está mejor. El valor de retorno `Nothing` indica que el valor de retorno op
 Para facilitar el uso, podemos crear una función que imprime `Entry` como una String, de manera que no tengamos que usar `showEntry` cada vez:
 
 ```text
-> let printEntry firstName lastName book = map showEntry (findEntry firstName lastName book)
+> printEntry firstName lastName book = map showEntry (findEntry firstName lastName book)
 ```
 
 Ahora creemos una agenda no vacía e intentemos de nuevo. Reutilizaremos nuestra entrada de ejemplo anterior:
 
 ```text
-> let book1 = insertEntry entry emptyBook
+> book1 = insertEntry entry emptyBook
 
 > printEntry "John" "Smith" book1
 

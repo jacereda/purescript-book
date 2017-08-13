@@ -52,7 +52,7 @@ render :: Element -> String
 que representa elementos HTML como cadenas HTML. Podemos probar esta versión de la biblioteca construyendo valores de los tipos apropiados explícitamente en PSCi:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Prelude
 > import Data.DOM.Simple
@@ -234,7 +234,7 @@ module Data.DOM.Smart
 Si probamos este nuevo módulo en PSCi, podemos ver grandes mejoras en la concisión del código de usuario:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Prelude
 > import Data.DOM.Smart
@@ -397,7 +397,7 @@ La mónada `Free` se define en la biblioteca `purescript-free` en el módulo `Co
 > import Control.Monad.Free
 
 > :kind Free
-(* -> *) -> * -> *
+(Type -> Type) -> Type -> Type
 ```
 
 La familia de `Free` indica que toma un constructor de tipo como argumento y devuelve otro constructor de tipo. De hecho, ¡la mónada `Free` se puede usar para convertir cualquier `Functor` en una `Monad`!

@@ -91,7 +91,7 @@ Cuando veamos las _clases de tipo_ más adelante en el libro, veremos que la fun
 Probemos la función `map` en PSCi:
 
 ```text
-$ psci
+$ pulp repl
 
 > import Prelude
 > map (\n -> n + 1) [1, 2, 3, 4, 5]
@@ -122,7 +122,7 @@ Veamos el tipo de `map`:
 
 ```text
 > :type map
-forall a b f. (Functor f) => (a -> b) -> f a -> f b
+forall a b f. Functor f => (a -> b) -> f a -> f b
 ```
 
 El tipo de `map` es de hecho más general de lo que necesitamos en este capítulo. Para nuestros propósitos, podemos tratar `map` como si tuviese el siguiente tipo menos general:
@@ -239,7 +239,7 @@ El primer paso es generar un array de pares de números inferiores a `n`, cosa q
 Empecemos mapeando cada número al array `1 .. n`:
 
 ```text
-> let pairs n = concatMap (\i -> 1 .. n) (1 .. n)
+> pairs n = concatMap (\i -> 1 .. n) (1 .. n)
 ```
 
 Podemos probar nuestra función:
@@ -253,10 +253,10 @@ Esto no es exactamente lo que queremos. En lugar de simplemente devolver el segu
 
 ```text
 > :paste
-… let pairs' n =
-…       concatMap (\i ->
-…         map (\j -> [i, j]) (1 .. n)
-…       ) (1 .. n)
+… pairs' n =
+…   concatMap (\i ->
+…     map (\j -> [i, j]) (1 .. n)
+…   ) (1 .. n)
 … ^D
 
 > pairs' 3
@@ -267,10 +267,10 @@ Esto tiene mejor pinta. Sin embargo, estamos generando demasiados pares: tenemos
 
 ```text
 > :paste
-… let pairs'' n =
-…       concatMap (\i ->
-…         map (\j -> [i, j]) (i .. n)
-…       ) (1 .. n)
+… pairs'' n =
+…   concatMap (\i ->
+…     map (\j -> [i, j]) (i .. n)
+…   ) (1 .. n)
 … ^D
 > pairs'' 3
 [[1,1],[1,2],[1,3],[2,2],[2,3],[3,3]]
@@ -281,7 +281,7 @@ Esto tiene mejor pinta. Sin embargo, estamos generando demasiados pares: tenemos
 ```text
 > import Data.Foldable
 
-> let factors n = filter (\pair -> product pair == n) (pairs'' n)
+> factors n = filter (\pair -> product pair == n) (pairs'' n)
 
 > factors 10
 [[1,10],[2,5]]
@@ -397,10 +397,10 @@ Comienza importando el módulo `Data.Foldable` e inspecciona los tipos de las fu
 > import Data.Foldable
 
 > :type foldl
-forall a b f. (Foldable f) => (b -> a -> b) -> b -> f a -> b
+forall a b f. Foldable f => (b -> a -> b) -> b -> f a -> b
 
 > :type foldr
-forall a b f. (Foldable f) => (a -> b -> b) -> b -> f a -> b
+forall a b f. Foldable f => (a -> b -> b) -> b -> f a -> b
 ```
 
 Estos tipos son más necesarios de lo que nos interesa por ahora. Para los propósitos de este capítulo, podemos asumir que PSCi nos da la siguiente respuesta (más específica):
@@ -460,13 +460,13 @@ La recursividad es una técnica potente para especificar algoritmos, pero tiene 
 Es fácil verificar el problema con el siguiente código en PSCi:
 
 ```text
-> let f 0 = 0
-      f n = 1 + f (n - 1)
+> f 0 = 0
+> f n = 1 + f (n - 1)
 
 > f 10
 10
 
-> f 10000
+> f 100000
 RangeError: Maximum call stack size exceeded
 ```
 
@@ -530,8 +530,8 @@ Por ejemplo, el ejemplo `reverse` se puede escribir como un pliegue al menos de 
 > import Data.Foldable
 
 > :paste
-… let reverse :: forall a. Array a -> Array a
-…     reverse = foldr (\x xs -> xs <> [x]) []
+… reverse :: forall a. Array a -> Array a
+… reverse = foldr (\x xs -> xs <> [x]) []
 … ^D
 
 > reverse [1, 2, 3]
@@ -589,7 +589,7 @@ isDirectory :: Path -> Boolean
 Podemos probar la API en PSCi:
 
 ```text
-$ pulp psci
+$ pulp repl
 
 > import Data.Path
 

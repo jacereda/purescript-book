@@ -137,8 +137,8 @@ El primer patrón sólo se ajusta a arrays de cinco elementos, cuyo primer y seg
 
 ```text
 > :paste
-… let takeFive [0, 1, a, b, _] = a * b
-…     takeFive _ = 0
+… takeFive [0, 1, a, b, _] = a * b
+… takeFive _ = 0
 … ^D
 
 > takeFive [0, 1, 2, 3, 4]
@@ -169,7 +169,7 @@ showPerson { first: x, last: y } = y <> ", " <> x
 Los patrones de registro proporcionan un buen ejemplo de una característica interesante del sistema de tipos de PureScript: _polimorfismo de fila_. Supongamos que hemos definido `showPerson` sin la firma de tipos de arriba. ¿Cuál sería su tipo inferido? Curiosamente, no es el mismo tipo que le dimos:
 
 ```text
-> let showPerson { first: x, last: y } = y <> ", " <> x
+> showPerson { first: x, last: y } = y <> ", " <> x
 
 > :type showPerson
 forall r. { first :: String, last :: String | r } -> String
@@ -200,7 +200,7 @@ Esta función es polimórfica en la _fila_ `r` de los campos del registro, de ah
 Date cuenta de que también podríamos haber escrito: 
 
 ```haskell
-> let showPerson p = p.last <> ", " <> p.first
+> showPerson p = p.last <> ", " <> p.first
 ```
 
 y PSCi habría inferido el mismo tipo.
@@ -435,7 +435,7 @@ showShape :: Shape -> String
 showShape (Circle c r)      = ...
 showShape (Rectangle c w h) = ...
 showShape (Line start end)  = ...
-showShape (Text loc text) = ...
+showShape (Text p text) = ...
 ```
 
 Cada constructor se puede usar como un patrón, y los argumentos al constructor se pueden ligar usando sus propios patrones. Considera el primer caso de `showShape`: si la `Shape` coincide con el constructor `Circle`, metemos en contexto los argumentos de `Circle` (centro y radio) usando dos patrones variables `c` y `r`. Los otros casos son similares.
@@ -505,11 +505,11 @@ showPicture :: Picture -> Array String
 showPicture = map showShape
 ```
 
-Probémosla. Compila tu módulo con `pulp build` y abre PSCi con `pulp psci`:
+Probémosla. Compila tu módulo con `pulp build` y abre PSCi con `pulp repl`:
 
 ```text
 $ pulp build
-$ pulp psci
+$ pulp repl
 
 > import Data.Picture
 
@@ -545,12 +545,12 @@ bounds :: Picture -> Bounds
 bounds = foldl combine emptyBounds
   where
     combine :: Bounds -> Shape -> Bounds
-    combine b shape = shapeBounds shape \/ b
+    combine b shape = union (shapeBounds shape) b
 ```
 
 En el caso base, necesitamos encontrar el rectángulo de delimitación mínimo de una `Picture` vacía, y el rectángulo de delimitación mínimo vacío definido por `emptyBounds` es suficiente.
 
-La función de acumulación `combine` se define en un bloque `where`. `combine` toma un rectángulo de delimitación calculado por la llamada recursiva `foldl` y la siguiente `Shape` del array, y usa el operador infijo `\/` para calcular la unión de dos rectángulos de delimitación. La función `shapeBounds` calcula la delimitación de un único shape usando ajuste de patrones. 
+La función de acumulación `combine` se define en un bloque `where`. `combine` toma un rectángulo de delimitación calculado por la llamada recursiva `foldl` y la siguiente `Shape` del array, y usa la función `union` para calcular la unión de dos rectángulos de delimitación. La función `shapeBounds` calcula la delimitación de un único shape usando ajuste de patrones. 
 
 X> ## Ejercicios
 X>

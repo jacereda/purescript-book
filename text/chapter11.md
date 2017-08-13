@@ -364,7 +364,7 @@ Veamos un ejemplo. La version transformadora de mónada de la mónada `State` es
 ```text
 > import Control.Monad.State.Trans
 > :kind StateT
-* -> (* -> *) -> * -> *
+Type -> (Type -> Type) -> Type -> Type
 ```
 
 Esto parece bastante confuso, pero podemos aplicar a `StateT` un argumento cada vez para entender cómo usarlo.
@@ -373,24 +373,24 @@ El primer argumento de tipo es el tipo de estado que queremos usar, como en el c
 
 ```text
 > :kind StateT String
-(* -> *) -> * -> *
+(Type -> Type) -> Type -> Type
 ```
 
-El siguiente argumento es un constructor de tipo con familia `* -> *`. Representa la mónada subyacente a la que queremos añadir los efectos de `StateT`. Como ejemplo elijamos la mónada `Either String`:
+El siguiente argumento es un constructor de tipo con familia `Type -> Type`. Representa la mónada subyacente a la que queremos añadir los efectos de `StateT`. Como ejemplo elijamos la mónada `Either String`:
 
 ```text
 > :kind StateT String (Either String)
-* -> *
+Type -> Type
 ```
 
 Nos queda un constructor de tipo. El argumento final representa el tipo de retorno, y podemos instanciarlo a `Number` por ejemplo:
 
 ```text
 > :kind StateT String (Either String) Number
-*
+Type
 ```
 
-Finalmente nos queda algo con familia `*`, que significa que ya podemos intentar buscar valores de este tipo.
+Finalmente nos queda algo con familia `Type`, que significa que ya podemos intentar buscar valores de este tipo.
 
 La mónada que hemos construido (`StateT String (Either String)`) representa cálculos que pueden fallar con un error y que pueden usar estado mutable.
 
@@ -521,7 +521,7 @@ Si probamos este cálculo en PSCi vemos que el estado se añade al registro de m
 Date cuenta de que tenemos que eliminar los efectos secundarios en el orden en que aparecen en la pila de transformadores de mónada: primero usamos `runStateT` para quitar el constructor de tipo `StateT`, luego `runWriterT`, y a continuación `runExceptT`. Finalmente, ejecutamos el cálculo en la mónada `Identity` usando `runIdentity`.
 
 ```text
-> let runParser p s = runIdentity $ runExceptT $ runWriterT $ runStateT p s
+> runParser p s = runIdentity $ runExceptT $ runWriterT $ runStateT p s
 
 > runParser split "test"
 (Right (Tuple (Tuple "t" "est") ["The state is test"]))
@@ -579,9 +579,9 @@ modify :: forall s. (s -> s) -> State s Unit
 En realidad, los tipos dados en el módulo `Control.Monad.State.Class` son más generales que eso:
 
 ```haskell
-get    :: forall m s. (MonadState s m) =>             m s
-put    :: forall m s. (MonadState s m) => s        -> m Unit
-modify :: forall m s. (MonadState s m) => (s -> s) -> m Unit
+get    :: forall m s. MonadState s m =>             m s
+put    :: forall m s. MonadState s m => s        -> m Unit
+modify :: forall m s. MonadState s m => (s -> s) -> m Unit
 ```
 
 El módulo `Control.Monad.State.Class` define la clase de tipos (multiparámetro) `MonadState`, que nos permite abstraer sobre "mónadas que soportan estado puro mutable". Como cabe esperar, el constructor de tipo `State s` es una instancia de la clase de tipos `MonadState s`, pero hay más instancias interesantes de esta clase.
@@ -625,8 +625,8 @@ class (Applicative f, Plus f) <= Alternative f
 El módulo `Data.List` proporciona dos funciones útiles para trabajar con constructores de tipo de la clase de tipos `Alternative`:
 
 ```haskell
-many :: forall f a. (Alternative f, Lazy (f (List a))) => f a -> f (List a)
-some :: forall f a. (Alternative f, Lazy (f (List a))) => f a -> f (List a)
+many :: forall f a. Alternative f => Lazy (f (List a)) => f a -> f (List a)
+some :: forall f a. Alternative f => Lazy (f (List a)) => f a -> f (List a)
 ```
 
 El combinador `many` usa la clase de tipos `Alternative` para ejecutar repetidamente un cálculo _cero o más_ veces. El combinador `some` es similar, pero requiere que al menos el primer cálculo tenga éxito.
@@ -695,7 +695,7 @@ lower = do
 Con esto, podemos definir un analizador que ajusta ávidamente muchas mayúsculas si el primer carácter es mayúscula, o muchas minúsculas si el primer carácter es minúscula:
 
 ```text
-> let upperOrLower = some upper <|> some lower
+> upperOrLower = some upper <|> some lower
 ```
 
 Este analizador encontrará coincidencias hasta que cambiemos de mayúsculas a minúsculas o viceversa:
@@ -712,7 +712,7 @@ Este analizador encontrará coincidencias hasta que cambiemos de mayúsculas a m
 Podemos incluso usar `many` para partir una cadena por completo en sus componentes mayúsculas y minúsculas:
 
 ```text
-> let components = many upperOrLower
+> components = many upperOrLower
 
 > runParser components "abCDeFgh"
 (Right (Tuple (Tuple [["a","b"],["C","D"],["e"],["F"],["g","h"]] "")
@@ -907,7 +907,7 @@ La interfaz de usuario de nuestra aplicación está definida por una función `r
 runGame
   :: forall eff
    . GameEnvironment
-  -> Eff ( err :: EXCEPTION
+  -> Eff ( exception :: EXCEPTION
          , readline :: RL.READLINE
          , console :: CONSOLE
          | eff
@@ -947,7 +947,7 @@ En nuestro caso, estamos interesados en implementar la función gestora de líne
 lineHandler
   :: GameState
   -> String
-  -> Eff ( err :: EXCEPTION
+  -> Eff ( exception :: EXCEPTION
          , console :: CONSOLE
          , readline :: RL.READLINE
          | eff
@@ -992,8 +992,8 @@ La última parte de la aplicación es responsable de analizar las opciones de l�
 ```haskell
 runY :: forall a eff.
           YargsSetup ->
-          Y (Eff (err :: EXCEPTION, console :: CONSOLE | eff) a) ->
-             Eff (err :: EXCEPTION, console :: CONSOLE | eff) a
+          Y (Eff (exception :: EXCEPTION, console :: CONSOLE | eff) a) ->
+             Eff (exception :: EXCEPTION, console :: CONSOLE | eff) a
 ```
 
 Esto se ilustra mejor con un ejemplo. La función `main` de la aplicación se define usando `runY` como sigue:

@@ -303,7 +303,7 @@ ap mf ma = do
   pure (f a)
 ```
 
-Si `m` es un miembro de la clase de tipos `Monad` que respeta las leyes, entonces hay una instancia `Applicative` válida para `apply` dada por `ap`.
+Si `m` es un miembro de la clase de tipos `Monad` que respeta las leyes, entonces hay una instancia `Applicative` válida para `m` dada por `ap`.
 
 El lector interesado puede comprobar que `ap` concuerda con `apply` para las mónadas que ya hemos encontrado: `Array`, `Maybe` y `Either e`.
 
@@ -506,7 +506,7 @@ Fíjate en que no tenemos que dar un tipo para `main`. `psc` encontrará el tipo
 
 ## La familia de Eff
 
-El tipo de `main` no se parece a los otros tipos que hemos visto antes. Para explicarlo, necesitamos considerar la _familia_ (*kind*) de `Eff`. Recuerda que los tipos se clasifican por sus familias de la misma manera que los valores se clasifican por sus tipos. Hasta ahora hemos visto sólo familias construidas a partir de `*` (la familia de tipos) y `->` (que construye familias para constructores de tipos).
+El tipo de `main` no se parece a los otros tipos que hemos visto antes. Para explicarlo, necesitamos considerar la _familia_ (*kind*) de `Eff`. Recuerda que los tipos se clasifican por sus familias de la misma manera que los valores se clasifican por sus tipos. Hasta ahora hemos visto sólo familias construidas a partir de `Type` (la familia de tipos) y `->` (que construye familias para constructores de tipos).
 
 Para averiguar la familia de `Eff`, usa el comando `:kind` en PSCi:
 
@@ -514,22 +514,22 @@ Para averiguar la familia de `Eff`, usa el comando `:kind` en PSCi:
 > import Control.Monad.Eff
 
 > :kind Eff
-# ! -> * -> *
+# Control.Monad.Eff.Effect -> Type -> Type
 ```
 
 Hay dos símbolos que no hemos visto antes.
 
-`!` es la familia de _efectos_, que representa _etiquetas a nivel de tipo_ (*type-level labels*) para distintos tipos de efectos secundarios. Para entender esto, fíjate en que las dos etiquetas que vimos en `main` tienen ambas familia `!`:
+`Control.Monad.Eff.Effect` es la familia de _efectos_, que representa _etiquetas a nivel de tipo_ (*type-level labels*) para distintos tipos de efectos secundarios. Para entender esto, fíjate en que las dos etiquetas que vimos en `main` tienen ambas familia `Control.Monad.Eff.Effect`:
 
 ```text
 > import Control.Monad.Eff.Console
 > import Control.Monad.Eff.Random
 
 > :kind CONSOLE
-!
+Control.Monad.Eff.Effect
 
 > :kind RANDOM
-!
+Control.Monad.Eff.Effect
 ```
 
 El constructor de familia `#` se usa para construir familias para _filas_, es decir, conjuntos etiquetados sin orden.
@@ -557,7 +557,7 @@ fullName :: forall r. { firstName :: String, lastName :: String | r } -> String
 fullName person = person.firstName <> " " <> person.lastName
 ```
 
-La familia del tipo a la izquierda de la flecha de función ha de ser `*`, porque sólo los tipos de familia `*` tienen valores.
+La familia del tipo a la izquierda de la flecha de función ha de ser `Type`, porque sólo los tipos de familia `Type` tienen valores.
 
 Las llaves son de hecho azúcar sintáctico, y el tipo completo que el compilador PureScript entiende es como sigue:
 
@@ -569,7 +569,7 @@ Date cuenta de que las llaves han sido eliminadas y hay un constructor extra `Re
 
 ```text
 > :kind Record
-# * -> *
+# Type -> Type
 ```
 
 Esto es, `Record` es un constructor de tipo que toma una _fila de tipos_ y construye un tipo. Esto es lo que nos permite escribir funciones polimórficas por fila sobre registros.
@@ -604,11 +604,11 @@ Como ejemplo, considera el paquete `purescript-exceptions`. Define dos funciones
 ```haskell
 throwException :: forall a eff
                 . Error
-               -> Eff (err :: EXCEPTION | eff) a
+               -> Eff (exception :: EXCEPTION | eff) a
 
 catchException :: forall a eff
                 . (Error -> Eff eff a)
-               -> Eff (err :: EXCEPTION | eff) a
+               -> Eff (exception :: EXCEPTION | eff) a
                -> Eff eff a
 ```
 
@@ -623,7 +623,7 @@ Por ejemplo, podemos escribir un fragmento de código que arroja excepciones usa
 Supongamos que queremos leer la configuración de nuestra aplicación de un documento JSON. El proceso de analizar el documento puede resultar en una excepción. El proceso de leer y analizar la configuración se puede escribir como una función con esta firma de tipo:
 
 ``` haskell
-readConfig :: forall eff. Eff (err :: EXCEPTION | eff) Config
+readConfig :: forall eff. Eff (exception :: EXCEPTION | eff) Config
 ```
 
 Entonces, en la función `main`, podemos usar `catchException` para gestionar el efecto `EXCEPTION` anotando el error y devolviendo una configuración por defecto:
@@ -635,7 +635,7 @@ main = do
   where
     printException e = do
       log (message e)
-      return defaultConfig
+      pure defaultConfig
 ```
 
 El paquete `purescript-eff` también define el gestor `runPure`, que toma un cálculo _sin_ efectos secundarios y lo evalúa de manera segura como un valor puro:
@@ -786,7 +786,7 @@ Hay un número de paquetes PureScript para trabajar directamente con el DOM o co
 Hay también bibliotecas PureScript que construyen abstracciones sobre estas bibliotecas, como
 
 - [`purescript-thermite`](http://github.com/paf31/purescript-thermite), que se basa en `purescript-react`, y 
-- [`purescript-halogen`](http://github.com/slamdata/purescript-halogen) que proporciona un conjunto de abstracciones seguras a nivel de tipos sobre la biblioteca [`virtual-dom`](http://github.com/Matt-Esch/virtual-dom).
+- [`purescript-halogen`](http://github.com/slamdata/purescript-halogen) que proporciona un conjunto de abstracciones seguras a nivel de tipos sobre una biblioteca de DOM virtual propia.
 
 En este capítulo, usaremos la biblioteca `purescript-react` para añadir una interfaz de usuario a nuestra agenda, pero animamos al lector interesado a explorar enfoques alternativos. 
 

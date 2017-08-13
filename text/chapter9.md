@@ -360,10 +360,10 @@ El módulo `Control.Monad.Eff.Ref` proporciona un constructor de tipo para refer
 > import Control.Monad.Eff.Ref
 
 > :kind Ref
-* -> *
+Type -> Type
 
 > :kind REF
-!
+Control.Monad.Eff.Effect
 ```
 
 Un valor de tipo `Ref a` es una referencia a una celda mutable que contiene un valor de tipo `a`, bastante parecido a `STRef h a` que vimos en el capítulo anterior. La diferencia es que, mientras que el efecto `ST` se puede eliminar usando `runST`, el efecto `Ref` no proporciona un gestor. Mientras que `ST` se usa para seguir la pista a la mutación local segura, `Ref` se usa para mutaciones globales. Por lo tanto se debe usar escasamente.

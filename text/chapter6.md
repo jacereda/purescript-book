@@ -311,14 +311,14 @@ threeAreEqual :: forall a. Eq a => a -> a -> a -> Boolean
 threeAreEqual a1 a2 a3 = a1 == a2 && a2 == a3
 ```
 
-La declaración de tipo parece un tipo polimórfico ordinario definido usando `forall`. Sin embargo, a continuación hay una restricción de clase de tipos separada del resto del tipo por una flecha doble `=>`.
+La declaración de tipo parece un tipo polimórfico ordinario definido usando `forall`. Sin embargo, a continuación hay una restricción de clase de tipos `Eq a` separada del resto del tipo por una flecha doble `=>`.
 
 Este tipo dice que podemos llamar `threeAreEqual` con cualquier elección de tipo `a`, siempre y cuando haya una instancia `Eq` disponible para `a` en uno de los módulos importados.
 
 Los tipos restringidos pueden contener varias instancias de clases de tipos, y los tipos de las instancias no están limitados a simples variables de tipo. Aquí hay otro ejemplo que usa instancias `Ord` y `Show` para comparar dos valores:  
 
 ```haskell
-showCompare :: forall a. (Ord a, Show a) => a -> a -> String
+showCompare :: forall a. Ord a => Show a => a -> a -> String
 showCompare a1 a2 | a1 < a2 =
   show a1 <> " is less than " <> show a2
 showCompare a1 a2 | a1 > a2 =
@@ -326,6 +326,11 @@ showCompare a1 a2 | a1 > a2 =
 showCompare a1 a2 =
   show a1 <> " is equal to " <> show a2
 ```
+
+Date cuenta de que se pueden especificar restricciones múltiples usando el símbolo `=>` múltiples veces, de la misma manera que especificamos funciones currificadas de varios argumentos. Pero recuerda no confundir ambos símbolos:
+
+- `a -> b` denota el tipo de funciones del _tipo_ `a` al _tipo_ `b`, mientras que
+- `a => b` aplica la _restricción_ `a` al tipo `b`.
 
 El compilador PureScript intentará inferir los tipos restringidos cuando no se proporcione una anotación de tipo. Esto puede ser util si queremos usar el tipo más general posible para una función.
 
@@ -368,7 +373,7 @@ Overlapping instances found for Prelude.Show T
 
 La regla de instancias superpuestas debe cumplirse para que la selección de instancias de clases de tipos sea un proceso predecible. Si permitiésemos que existiesen dos instancias de clase de tipos para un tipo, cualquiera podría elegirse dependiendo del orden de importación de los módulos, y podría llevar a comportamiento impredecible del programa en tiempo de ejecución, algo no deseable.
 
-Si realmente es cierto que hay dos instancias de clase de tipos válidas para un tipo que satisfacen las leyes apropiadas, una aproximación común es definir newtypes para envolver el tipo existente. Como se permite que los newtypes diferentes tengan diferentes instancias de clases de tipos, para la regla de instancias superpuestas ya no es un problema. Esta aproximación se usa en las bibliotecas estándar de PureScript, por ejemplo en `purescript-monoids`, donde el tipo `Maybe a` tiene múltiples instancias válidas para la clase de tipos `Monoid`.
+Si realmente es cierto que hay dos instancias de clase de tipos válidas para un tipo que satisfacen las leyes apropiadas, una aproximación común es definir newtypes para envolver el tipo existente. Como se permite que los newtypes diferentes tengan diferentes instancias de clases de tipos, para la regla de instancias superpuestas ya no es un problema. Esta aproximación se usa en las bibliotecas estándar de PureScript, por ejemplo en `purescript-maybe`, donde el tipo `Maybe a` tiene múltiples instancias válidas para la clase de tipos `Monoid`.
 
 ## Dependencias de instancia (*instance dependencies*)
 
@@ -381,7 +386,14 @@ instance showArray :: Show a => Show (Array a) where
   ...
 ```
 
-Esta instancia de clase de tipos se proporciona el la biblioteca `purescript-prelude`.
+Si una instancia de una clase de tipos depende de varias instancias, esas instancias deben agruparse en paréntesis y separarse por comas a la izquierda del símbolo `=>`:
+
+```haskell
+instance showEither :: (Show a, Show b) => Show (Either a b) where
+  ...
+```
+
+Estas dos instancia de clase de tipos se proporciona el la biblioteca `purescript-prelude`.
 
 Cuando se compila el programa, se elige la instancia correcta de clase de tipos para `Show` basándose en el tipo inferido del argumento pasado a `show`. La instancia seleccionada puede depender de muchas relaciones de instancia, pero esta complejidad no se expone al desarrollador.
 
@@ -452,7 +464,7 @@ Podemos escribir funciones que trabajan sobre flujos arbitrarios. Por ejemplo, a
 import Prelude
 import Data.Monoid (class Monoid, mempty)
 
-foldStream :: forall l e m. (Stream l e, Monoid m) => (e -> m) -> l -> m
+foldStream :: forall l e m. Stream l e => Monoid m => (e -> m) -> l -> m
 foldStream f list =
   case uncons list of
     Nothing -> mempty
@@ -567,6 +579,7 @@ Otra razón para definir una relación de superclase es en el caso donde hay una
 
 X> ## Ejercicios
 X>
+X> 1. (Medio) Define una función parcial que encuentra el máximo de un array no vacío de enteros. Tu función debe tener el tipo `Partial => Array Int -> Int`. Prueba tu función en PSCi usando `unsafePartial`. _Pista_: Usa la función `maximum` de `Data.Foldable`.
 X> 1. (Medio) La clase `Action` es una clase de tipos de varios parámetros que define una acción de un tipo sobre otro:
 X>
 X>     ```haskell
@@ -574,29 +587,40 @@ X>     class Monoid m <= Action m a where
 X>       act :: m -> a -> a
 X>     ```
 X>           
-X>     Una _acción_ es una función que describe cómo se puede usar un monoide para modificar un valor de otro tipo. Esperamos que la acción respete el operador de concatenación del monoide. Por ejemplo, el monoide de los números naturales con la suma (definido en el módulo `Data.Monoid.Additive`) _actúa_ sobre cadenas repitiendo la cadena un número de veces:
-X>  
-X>     ```haskell
-X>     import Data.Monoid.Additive (Additive(..))
+X>     Una _acción_ es una función que describe cómo se puede usar un monoide para modificar un valor de otro tipo. Hay dos leyes para la clase de tipos `Action`:
 X>
-X>     instance repeatAction :: Action (Additive Int) String where
-X>       act (Additive n) s = repeat n s where
-X>         repeat 0 _ = ""
-X>         repeat m s = s <> repeat (m - 1) s
+X>     - `act mempty a = a`
+X>     - `act (m1 <> m2) a = act m1 (act m2 a)`
+X>
+X>     Esto es, la acción respeta las operaciones definidas en la clase `Monoid`.
+X>        
+X>     Por ejemplo, los números naturales forman un monoide bajo la multiplicación:
+X>
+X>     ```haskell
+X>     newtype Multiply = Multiply Int
+X>
+X>     instance semigroupMultiply :: Semigroup Multiply where
+X>       append (Multiply n) (Multiply m) = Multiply (n * m)
+X>
+X>     instance monoidMultiply :: Monoid Multiply where
+X>       mempty = Multiply 1
 X>     ```
 X>
-X>     Date cuenta de que `act (Additive 2) s` es igual a la combinación `act (Additive 1) s <> act (Additive 1) s`, y `Additive 1 <> Additive 1 = Additive 2'.
-X>   
-X>     Escribe un conjunto razonable de leyes que describan cómo debe la clase `Action` interactuar con la clase `Monoid`. _Pista_: ¿Cómo esperamos que actúe `mempty` sobre los elementos? ¿Y `append`?
+X>     Este monoide actúa sobre cadenas repitiendo la cadena de entrada un número determinado de veces. Escribe una instancia que implementa esta acción:
+X>
+X>     ```haskell
+X>     instance repeatAction :: Action Multiply String
+X>     ```
+X>
+X>     ¿Satisface esta instancia las leyes listadas arriba?
 X> 1. (Medio) Escribe una instancia `Action m a => Action m (Array a)`, donde la acción sobre arrays está definida por la acción sobre los elementos de manera independiente.
-X> 1. (Difícil) ¿Deben los argumentos de la clase de tipo multiparamétrica `Action` estar relacionados por alguna dependencia funcional? ¿Por qué?
 X> 1. (Difícil) Dado el siguiente newtype, escribe una instancia para `Action m (Self m)`, donde el monoide `m` actúa sobre sí mismo usando `append`:
 X>
 X>     ```haskell
 X>     newtype Self m = Self m
 X>     ```
 X>
-X> 1. (Medio) Define una función parcial que encuentra el máximo de un array no vacío de enteros. Tu función debe tener el tipo `Partial => Array Int -> Int`. Prueba tu función en PSCi usando `unsafePartial`. _Pista_: Usa la función `maximum` de `Data.Foldable`.
+X> 1. (Difícil) ¿Deben los argumentos de la clase de tipos multiparamétrica `Action` estar relacionados por alguna dependencia funcional? ¿Por qué?
 
 ## Una clase de tipos para funciones resumen
 
