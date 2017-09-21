@@ -858,7 +858,7 @@ createClass
    . ReactSpec props state eff
   -> ReactClass props
 
-type Render props state eff =
+type Render props state eff
    = ReactThis props state
   -> Eff ( props :: ReactProps
          , refs :: ReactRefs Disallowed

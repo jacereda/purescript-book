@@ -28,7 +28,7 @@ $ purs
 
 Otras opciones para instalar el compilador de PureScript:
 
-- Mediante NPM: `npm install -g PureScript`.
+- Mediante NPM: `npm install -g purescript`.
 - Construir el compilador a partir del código fuente. Las instrucciones están disponibles en el sitio web de PureScript.
 
 ## Instalando las herramientas
