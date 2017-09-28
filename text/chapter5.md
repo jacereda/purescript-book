@@ -299,7 +299,7 @@ Las funciones que devuelven un valor para cualquier combinación de entradas se 
 
 Generalmente se considera mejor definir funciones totales donde sea posible. Si se sabe que una función no devuelve un resultado para algún conjunto válido de entradas, normalmente es mejor devolver un valor de tipo `Maybe a` para algún `a`, usando `Nothing` para indicar fallo. De esta manera, la presencia o ausencia de un valor se puede indicar de una forma segura a nivel de tipos.
 
-El compilador de PureScript generará un error si puede detectar que tu función no es total debido a un ajuste de patrones incompleto. La función `unsafePartial` se puede usar para silenciar estos errores (¡si estas seguro de que tu función parcial es segura!). Si quitamos la llamada a la función `unsafePartial` en la función de antes, `psc` generará el siguiente error:
+El compilador de PureScript generará un error si puede detectar que tu función no es total debido a un ajuste de patrones incompleto. La función `unsafePartial` se puede usar para silenciar estos errores (¡si estas seguro de que tu función parcial es segura!). Si quitamos la llamada a la función `unsafePartial` en la función de antes, el compilador generará el siguiente error:
 
 ```text
 A case expression could not be determined to cover all inputs.

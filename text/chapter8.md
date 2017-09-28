@@ -502,7 +502,7 @@ Esta vez, hemos elegido que `eff2` sea `(random :: RANDOM | eff)`.
 
 La cuestión es que los tipos de `random` y `logShow` indican los efectos secundarios que contienen, pero de tal manera que otros efectos secundarios puedan ser _mezclados_ para construir cálculos más grandes con conjuntos de efectos secundarios más grandes.
 
-Fíjate en que no tenemos que dar un tipo para `main`. `psc` encontrará el tipo más general para `main` dados los tipos polimórficos de `random` y `logShow`.
+Fíjate en que no tenemos que dar un tipo para `main`. El compilador encontrará el tipo más general para `main` dados los tipos polimórficos de `random` y `logShow`.
 
 ## La familia de Eff
 
@@ -747,7 +747,7 @@ simulate x0 v0 time = runPure $ runST do
   pure final.x
 ```
 
-el compilador `psc` se dará cuenta de que la referencia a celda no puede escapar de su ámbito y puede convertirla de manera segura en una `var`. Aquí está el JavaScript generado para el cuerpo de la llamada a `runST`:
+el compilador se dará cuenta de que la referencia a celda no puede escapar de su ámbito y puede convertirla de manera segura en una `var`. Aquí está el JavaScript generado para el cuerpo de la llamada a `runST`:
 
 ```javascript
 var ref = { x: x0, v: v0 };
